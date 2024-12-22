@@ -191,6 +191,7 @@ typedef struct {
     int circle_radius_location;
     int circle_power_location;
     bool fullscreen;
+    bool on_pause;
 
     // Renderer
     bool rendering;
@@ -1221,11 +1222,18 @@ static int microphone_button_with_location(const char *file, int line, Rectangle
 
 static void toggle_track_playing(Track *track)
 {
-    if (IsMusicStreamPlaying(track->music)) {
-        PauseMusicStream(track->music);
-    } else {
+    if (p->on_pause) {
         ResumeMusicStream(track->music);
+        p->on_pause = false;
+    } else {
+        PauseMusicStream(track->music);
+        p->on_pause = true;
     }
+    /*if (IsMusicStreamPlaying(track->music)) {*/
+    /*    PauseMusicStream(track->music);*/
+    /*} else {*/
+    /*    ResumeMusicStream(track->music);*/
+    /*}*/
 }
 
 static void start_rendering_track(Track *track)
@@ -1455,12 +1463,25 @@ static void preview_screen(void)
         }
     }
 
+
 #ifdef MUSIALIZER_MICROPHONE
     if (IsKeyPressed(KEY_CAPTURE)) start_capture();
 #endif // MUSIALIZER_MICROPHONE
 
     Track *track = current_track();
     if (track) { // The music is loaded and ready
+        if (!IsMusicStreamPlaying(track->music) && !p->on_pause) {
+            assert(p->current_track >= 0);
+            if ((size_t)p->current_track+1 < p->tracks.count) {
+                p->current_track += 1;
+            } else {
+                p->current_track = 0;
+            }
+            track = current_track();
+            assert(track);
+            PlayMusicStream(track->music);
+        }
+
         UpdateMusicStream(track->music);
 
         if (IsKeyPressed(KEY_TOGGLE_PLAY)) {
