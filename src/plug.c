@@ -5,6 +5,13 @@
 #include <math.h>
 #include <string.h>
 #include <complex.h>
+#include <errno.h>
+#include <limits.h>
+
+// Linux part
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include "build/config.h"
 #include "plug.h"
@@ -1364,6 +1371,57 @@ static bool toolbar(Track *track, Rectangle boundary)
     }
 
     return interacted;
+}
+
+static void load_music_file(char *filepath)
+{
+    Music music = LoadMusicStream(filepath);
+    if (IsMusicReady(music)) {
+        music.looping = false;
+        AttachAudioStreamProcessor(music.stream, callback);
+        char *filepath_copy = strdup(filepath);
+        assert(filepath_copy != NULL);
+        nob_da_append(&p->tracks, (CLITERAL(Track) {
+                    .file_path = filepath_copy,
+                    .music = music,
+                    }));
+    } else {
+        popup_tray_push(&p->pt);
+    }
+}
+
+MUSIALIZER_PLUG void plug_load_music_files(char **filepaths, size_t count)
+{
+    char filepath_buffer[PATH_MAX+1];
+    for (size_t i = 0; i < count; i++) {
+        struct stat path_stat;
+        stat(filepaths[i], &path_stat);
+        if (S_ISDIR(path_stat.st_mode)) {
+            DIR *dir = opendir(filepaths[i]);
+            if (dir == NULL) {
+                fprintf(stderr, "ERROR: Could not open dir '%s': %s\n", filepaths[i], strerror(errno));
+                exit(1);
+            }
+
+            struct dirent *f;
+            while ((f = readdir(dir))) {
+                if (!strcmp(f->d_name, ".")) continue;
+                if (!strcmp(f->d_name, "..")) continue;
+                realpath(filepaths[i], filepath_buffer);
+                strcat(filepath_buffer, "/");
+                strcat(filepath_buffer, f->d_name);
+                load_music_file(filepath_buffer);
+            }
+        } else {
+            realpath(filepaths[i], filepath_buffer);
+            load_music_file(filepath_buffer);
+        }
+    }
+
+    if (current_track() == NULL && p->tracks.count > 0) {
+        p->current_track = 0;
+        PlayMusicStream(p->tracks.items[0].music);
+    }
 }
 
 static void preview_screen(void)

@@ -11,7 +11,7 @@
 
 #include "./hotreload.h"
 
-int main(void)
+int main(int argc, char *argv[])
 {
 #ifndef _WIN32
     // NOTE: This is needed because if the pipe between Musializer and FFmpeg breaks
@@ -41,6 +41,10 @@ int main(void)
     InitAudioDevice();
 
     plug_init();
+
+    // load files from the command line if they are provided
+    if (argc > 1) plug_load_music_files(&argv[1], argc-1);
+
     while (!WindowShouldClose()) {
         if (IsKeyPressed(KEY_H)) {
             void *state = plug_pre_reload();
