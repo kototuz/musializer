@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <complex.h>
+#include <math.h>
+#include <time.h>
 
 #include <raylib.h>
 
@@ -42,6 +44,8 @@ int main(int argc, char *argv[])
 
     plug_init();
 
+    // Init seed to mix music
+    srand(time(NULL));
     // load files from the command line if they are provided
     if (argc > 1) plug_load_music_files(&argv[1], argc-1);
 
