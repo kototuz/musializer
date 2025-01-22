@@ -1427,11 +1427,13 @@ MUSIALIZER_PLUG void plug_load_music_files(char **filepaths, size_t count)
     }
 
     // Simple shuffle 
-    for (int i = p->tracks.count-1; i >= 0; i--) {
-        int j = rand() % (p->tracks.count-1);
-        Track tmp = p->tracks.items[i];
-        p->tracks.items[i] = p->tracks.items[j];
-        p->tracks.items[j] = tmp;
+    if (p->tracks.count > 1) {
+        for (int i = p->tracks.count-1; i >= 0; i--) {
+            int j = rand() % (p->tracks.count-1);
+            Track tmp = p->tracks.items[i];
+            p->tracks.items[i] = p->tracks.items[j];
+            p->tracks.items[j] = tmp;
+        }
     }
 
     if (current_track() == NULL && p->tracks.count > 0) {
