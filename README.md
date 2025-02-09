@@ -1,3 +1,24 @@
+> [!WARNING]
+> This fork works only on *Linux*
+
+# Fork goal
+
+## Pass music through command line.
+
+If the file is a directory, musializer will try to load files from that directory. But it's not recursive.
+
+``` console
+$ musializer <file1> <file2> ...
+```
+
+## Listen to music without stopping
+
+If the current song is over we go to the next one. If we reach the end of the music list we return to the beginning
+
+## Music mixing
+
+When music is loaded we shuffle it.
+
 # Musializer
 
 <p align=center>
