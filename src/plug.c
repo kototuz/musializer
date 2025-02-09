@@ -1879,7 +1879,7 @@ MUSIALIZER_PLUG void plug_init(void)
     p->current_track = -1;
 
     // TODO: restore master volume between sessions
-    SetMasterVolume(0.5);
+    SetMasterVolume(0.1);
 }
 
 MUSIALIZER_PLUG void *plug_pre_reload(void)
